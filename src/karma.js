@@ -14,9 +14,10 @@ import {
 } from "karmajs"
 
 export default class Karma {
-  static init(node = "wss://node.karma.red", autoconnect = false) {
+  static init(node = "wss://node.karma.red", autoconnect = false, autoreconnect = true) {
     this.node = node;
     this.events = Event.init(this)
+    this.autoreconnect = autoreconnect
 
     if (autoconnect)
       return this.connect()
@@ -25,6 +26,9 @@ export default class Karma {
   static async connect() {
     if (this.connectPromise || this.connectedPromise)
       return Promise.all([this.connectPromise, this.connectedPromise]);
+
+    if (this.autoreconnect)
+      Api.getApis().setRpcConnectionStatusCallback(this.statusCallBack.bind(this))
 
     await (this.connectPromise = this.reconnect());
     await (this.connectedPromise = this.connectedInit());
@@ -41,6 +45,14 @@ export default class Karma {
     this.chain = res[0].network;
 
     return res;
+  }
+
+  static statusCallBack(status) {
+    console.log("WebSocket status:", status)
+    if (status === 'closed') {
+      console.log("WebSocket status, try to connect...");
+      setTimeout(this.reconnect.bind(this), 2000)
+    }
   }
 
   static async connectedInit() {
@@ -85,7 +97,7 @@ export default class Karma {
     return Login.generateKeys(name, password, arrKeysName);
   }
 
-  constructor(accountName, activeKey, feeSymbol = this.chain.core_asset) {
+  constructor(accountName, activeKey, feeSymbol = Karma.chain.core_asset) {
     if (activeKey)
       this.activeKey = PrivateKey.fromWif(activeKey);
 
@@ -127,7 +139,7 @@ export default class Karma {
     if (!this.memoKey)
       throw new Error("Not set memoKey!");
 
-    let nonce = TransactionHelper.unique_nonce_uint64(),
+    let nonce = Date.now().toString(), //TransactionHelper.unique_nonce_uint64(),
         to = (await Karma.accounts[toName]).options.memo_key;
 
     return {
