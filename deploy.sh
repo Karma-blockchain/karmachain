@@ -169,6 +169,9 @@ enable_expanded_output() {
   fi
 }
 
+
+
+
 #this is used to avoid outputting the repo URL, which may contain a secret token
 disable_expanded_output() {
   if [ $verbose ]; then
