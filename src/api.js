@@ -1,4 +1,10 @@
-import {Apis} from "karmajs-ws";
+import {Apis, ChainConfig } from "karmajs-ws";
+
+ChainConfig.networks.KarmaTestnet = {
+    core_asset: 'KRMT',
+    address_prefix: 'KRMT',
+    chain_id: 'e81bea67cebfe8612010fc7c26702bce10dc53f05c57ee6d5b720bbe62e51bef',
+}
 
 export default class Api {
   static new(api) {
