@@ -79,6 +79,38 @@ async function startAfterConnected() {
 }
 ```
 
+## Karma in REPL
+
+If you install `karmachan`-package in global storage, you may start `karma` exec script:
+```js
+$ karma
+>|
+```
+This command try autoconnect to mainnet karmachain. If you want to connect on testnet, try this:
+```js
+$ karma --testnet
+>|
+```
+
+It is nodejs REPL with several variables:
+- `karma`, main class `karmachain` package
+- `login`, function to create object of class `Karma`
+- `generateKeys`, to generateKeys from login and password
+- `accounts`, is analog `Karma.accounts`
+- `assets`, is analog `Karma.assets`
+- `db`, is analog `Karma.db`
+- `history`, is analog `Karma.hostory`
+- `network`, is analog `Karma.network`
+- `fees`, is analog `Karma.fees`
+
+### For example
+
+```js
+$ karma
+> assets["krm"].then(console.log)
+```
+
+
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub.

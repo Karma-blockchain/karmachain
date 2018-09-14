@@ -1,8 +1,11 @@
 {
   "name": "karmachain",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Package for work with Karma blockchain",
   "main": "index.js",
+  "bin": {
+    "karma": "./cli.js"
+  },
   "scripts": {
     "dev": "nodemon --exec 'npm' run build --ignore dist/ --watch src --delay 3",
     "build": "npx babel src -d dist"
