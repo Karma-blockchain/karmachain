@@ -47,6 +47,10 @@ export default class Karma {
     return res;
   }
 
+  static disconnect() {
+    return Api.getApis().close()
+  }
+
   static statusCallBack(status) {
     console.log("WebSocket status:", status)
     if (status === 'closed') {

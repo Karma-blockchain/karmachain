@@ -110,6 +110,42 @@ $ karma
 > assets["krm"].then(console.log)
 ```
 
+### Shot request
+
+If need call only one request, you may use `--account`, `--asset`,  `--block` or `--object` keys in command-line:
+```js
+$ karma --account krm-eth
+{
+  "id": "1.2.5992",
+  "membership_expiration_date": "1970-01-01T00:00:00",
+  "registrar": "1.2.37",
+  "referrer": "1.2.21",
+  ...
+}
+$ karma --asset krm
+{
+  "id": "1.3.0",
+  "symbol": "KRM",
+  "precision": 5,
+  ...
+}
+$ karma --block 
+block_num: 4636380
+{
+  "previous": "0046bedba1317d146dd6afbccff94412d76bf094",
+  "timestamp": "2018-10-01T13:09:40",
+  "witness": "1.6.41",
+  ...
+}
+$ karma --object 1.2.3
+{
+  "id": "1.2.3",
+  "membership_expiration_date": "1969-12-31T23:59:59",
+  "registrar": "1.2.3",
+  "referrer": "1.2.3",
+  ...
+}
+```
 
 ## Contributing
 
