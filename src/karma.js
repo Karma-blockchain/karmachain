@@ -122,12 +122,20 @@ export default class Karma {
     this.memoKey = PrivateKey.fromWif(memoKey);
   }
 
-  async sendTransaction(type, operation) {
-    let tx = new TransactionBuilder();
-    tx.add_type_operation(type, operation)
+  newTransaction() {
+    return new TransactionBuilder()
+  }
+
+  async broadcast(tx) {
     await tx.set_required_fees()
     tx.add_signer(this.activeKey, this.activeKey.toPublicKey().toPublicKeyString());
     return tx.broadcast();
+  }
+
+  async sendTransaction(type, operation) {
+    let tx = new TransactionBuilder();
+    tx.add_type_operation(type, operation)
+    return this.broadcast(tx)
   }
 
   async balances() {
