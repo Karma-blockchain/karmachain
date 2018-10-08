@@ -112,7 +112,7 @@ $ karma
 
 ### Shot request
 
-If need call only one request, you may use `--account`, `--asset`,  `--block` or `--object` keys in command-line:
+If need call only one request, you may use `--account`, `--account-id`, `--asset`, `--asset-id`, `--block`, `--object`, `--history` or `--transfer` keys in command-line:
 ```js
 $ karma --account krm-eth
 {
@@ -129,7 +129,7 @@ $ karma --asset krm
   "precision": 5,
   ...
 }
-$ karma --block 
+$ karma --block # <number>
 block_num: 4636380
 {
   "previous": "0046bedba1317d146dd6afbccff94412d76bf094",
@@ -145,6 +145,15 @@ $ karma --object 1.2.3
   "referrer": "1.2.3",
   ...
 }
+$ karma --history <account> <limit>
+[
+  {
+    "id": "1.11.98179",
+    "op": [
+      0,
+  ...
+$ karma --transfer <from> <to> <amount> <asset>
+Transfered <amount> <asset> from '<from>' to '<to>' with memo '<memo>'
 ```
 
 ## Contributing

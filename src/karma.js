@@ -126,9 +126,9 @@ export default class Karma {
     return new TransactionBuilder()
   }
 
-  async broadcast(tx) {
+  async broadcast(tx, privateKey = this.activeKey) {
     await tx.set_required_fees()
-    tx.add_signer(this.activeKey, this.activeKey.toPublicKey().toPublicKeyString());
+    tx.add_signer(privateKey, privateKey.toPublicKey().toPublicKeyString());
     return tx.broadcast();
   }
 
