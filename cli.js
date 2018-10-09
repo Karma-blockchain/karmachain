@@ -51,29 +51,11 @@ if (process.argv.includes("--account")) {
       karma.disconnect()
     }, showError)
   })
-} else if (process.argv.includes("--account-id")) {
-  let index = process.argv.indexOf("--account-id")
-
-  connect(false).then(() => {
-    karma.accounts.id(process.argv[index + 1]).then(result => {
-      console.log(JSON.stringify(result, null, 2))
-      karma.disconnect()
-    }, showError)
-  })
 } else if (process.argv.includes("--asset")) {
   let index = process.argv.indexOf("--asset")
 
   connect(false).then(() => {
     karma.assets[process.argv[index + 1]].then(result => {
-      console.log(JSON.stringify(result, null, 2))
-      karma.disconnect()
-    }, showError)
-  })
-} else if (process.argv.includes("--asset-id")) {
-  let index = process.argv.indexOf("--asset-id")
-
-  connect(false).then(() => {
-    karma.assets.id(process.argv[index + 1]).then(result => {
       console.log(JSON.stringify(result, null, 2))
       karma.disconnect()
     }, showError)
@@ -101,12 +83,19 @@ if (process.argv.includes("--account")) {
 } else if (process.argv.includes("--history")) {
   let index = process.argv.indexOf("--history"),
       account_name = process.argv[index + 1],
-      limit = process.argv[index + 2];
+      limit = process.argv[index + 2],
+      start = process.argv[index + 3],
+      stop = process.argv[index + 4];
 
   connect(false).then(async () => {
     try {
       let account = await karma.accounts[account_name]
-      let history = await karma.history.get_account_history(account.id, "1.11.0", isNaN(limit) ? 100 : limit, "1.11.0")
+      let history = await karma.history.get_account_history(
+        account.id, 
+        /^1.11.\d+$/.test(start) ? start : "1.11.0", 
+        isNaN(limit) ? 100 : limit, 
+        /^1.11.\d+$/.test(stop) ? stop : "1.11.0"
+      )
       console.log(JSON.stringify(history, null, 2))
     } catch(error) {
       console.log(`Error: ${error.message}`)
