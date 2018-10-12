@@ -3,11 +3,9 @@ import Asset from "./asset.js"
 import Account from "./account.js"
 import Api from "./api.js"
 import Fees from "./fees.js"
+import Transaction from "./transaction.js";
 import {
-  TransactionBuilder,
-  TransactionHelper,
   PrivateKey,
-  PublicKey,
   Login,
   Aes,
   ChainStore
@@ -69,6 +67,7 @@ export default class Karma {
     this.history = Api.new('history_api');
     this.network = Api.new('network_api');
     //this.crypto = Api.new('crypto_api');
+    this.newTx = Transaction.newTx;
 
     this.assets = Asset.init(this.db);
     this.accounts = Account.init(this.db);
@@ -105,6 +104,10 @@ export default class Karma {
     if (activeKey)
       this.activeKey = PrivateKey.fromWif(activeKey);
 
+    this.newTx = () => {
+      return Transaction.newTx([this.activeKey])
+    }
+
     this.initPromise = Promise.all([
       Karma.accounts[accountName],
       Karma.assets[feeSymbol]
@@ -122,20 +125,8 @@ export default class Karma {
     this.memoKey = PrivateKey.fromWif(memoKey);
   }
 
-  newTransaction() {
-    return new TransactionBuilder()
-  }
-
-  async broadcast(tx, privateKey = this.activeKey) {
-    await tx.set_required_fees()
-    tx.add_signer(privateKey, privateKey.toPublicKey().toPublicKeyString());
-    return tx.broadcast();
-  }
-
-  async sendTransaction(type, operation) {
-    let tx = new TransactionBuilder();
-    tx.add_type_operation(type, operation)
-    return this.broadcast(tx)
+  broadcast(tx, keys = [this.activeKey]) {
+    return tx.broadcast(keys)
   }
 
   async balances() {
@@ -170,7 +161,7 @@ export default class Karma {
       .toString("utf-8");
   }
 
-  async transfer(toName, assetSymbol, amount, memo) {
+  async transferParams(toName, assetSymbol, amount, memo) {
     await this.initPromise;
 
     let asset = await Karma.assets[assetSymbol],
@@ -179,7 +170,7 @@ export default class Karma {
     if (intAmount == 0)
       throw new Error("Amount equal 0!")
 
-    let operation = {
+    let params = {
       fee: this.feeAsset.toParam(),
       from: this.account.id,
       to: (await Karma.accounts[toName]).id,
@@ -188,8 +179,16 @@ export default class Karma {
     };
 
     if (memo)
-      operation.memo = (typeof memo == "string") ? (await this.memo(toName, memo)) : memo;
+      params.memo = (typeof memo == "string") ? (await this.memo(toName, memo)) : memo;
 
-    return this.sendTransaction("transfer",operation);
+    return params
+  }
+
+  async transfer() {
+    let params = await this.transferParams(...arguments)
+
+    let tx = this.newTx()
+    tx.transfer(params)
+    return tx.broadcast()
   }
 }
