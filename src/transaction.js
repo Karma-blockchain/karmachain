@@ -17,12 +17,12 @@ class Transaction {
       return obj[name]
 
     return (params) => {
-      this.add(name, params)
+      this.add({ [name]: params })
     }
   }
 
-  add(operation, params) {
-    this.tx.add_type_operation(operation, params)
+  add(operations) {
+    Object.keys(operations).forEach(op => this.tx.add_type_operation(op, operations[op]))
   }
 
   async broadcast(keys) {

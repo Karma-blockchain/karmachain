@@ -4,56 +4,48 @@ import Account from "./account.js"
 import Api from "./api.js"
 import Fees from "./fees.js"
 import Transaction from "./transaction.js";
-import {
-  PrivateKey,
-  Login,
-  Aes,
-  ChainStore
-} from "karmajs"
+import { PrivateKey, Login, Aes, ChainStore } from "karmajs"
 
-export default class Karma {
-  static init(node = "wss://node.karma.red", autoconnect = false, autoreconnect = true) {
-    this.node = node;
-    this.events = Event.init(this)
-    this.autoreconnect = autoreconnect
+class Karma {
+  static node = "wss://node.karma.red"
+  static autoreconnect = true
 
-    if (autoconnect)
-      return this.connect()
-  }
+  static async connect(node, autoreconnect = Karma.autoreconnect) {
+    if (Karma.connectPromise || Karma.connectedPromise)
+      return Promise.all([Karma.connectPromise, Karma.connectedPromise]);
 
-  static async connect() {
-    if (this.connectPromise || this.connectedPromise)
-      return Promise.all([this.connectPromise, this.connectedPromise]);
+    if (Karma.autoreconnect)
+      Api.getApis().setRpcConnectionStatusCallback(Karma.statusCallBack)
 
-    if (this.autoreconnect)
-      Api.getApis().setRpcConnectionStatusCallback(this.statusCallBack.bind(this))
+    await (Karma.connectPromise = Karma.reconnect(node));
+    await (Karma.connectedPromise = Karma.connectedInit());
 
-    await (this.connectPromise = this.reconnect());
-    await (this.connectedPromise = this.connectedInit());
+    Karma.store = ChainStore;
 
-    this.store = ChainStore;
-
-    this.events.connectedNotify()
+    Event.connectedNotify()
 
     return true;
   }
 
-  static async reconnect() {
-    let res = await Api.getApis().instance(this.node, true).init_promise;
-    this.chain = res[0].network;
+  static async reconnect(node) {
+    Karma.node = node
+    let res = await Api.getApis().instance(Karma.node, true).init_promise;
+    Karma.chain = res[0].network;
 
     return res;
   }
 
   static disconnect() {
+    Karma.connectPromise = Karma.connectedPromise = undefined
+    Karma.autoreconnect = false
     return Api.getApis().close()
   }
 
   static statusCallBack(status) {
     console.log("WebSocket status:", status)
-    if (status === 'closed') {
+    if (Karma.autoreconnect && status === 'closed') {
       console.log("WebSocket status, try to connect...");
-      setTimeout(this.reconnect.bind(this), 2000)
+      setTimeout(Karma.reconnect, 2000)
     }
   }
 
@@ -76,19 +68,19 @@ export default class Karma {
   }
 
   static subscribe() {
-    this.events.subscribe(...arguments)
+    Event.subscribe(...arguments)
   }
 
-  static async login(accountName, password, feeSymbol = this.chain.core_asset) {
+  static async login(accountName, password, feeSymbol = Karma.chain.core_asset) {
     let
-      acc = await this.accounts[accountName],
+      acc = await Karma.accounts[accountName],
       activeKey = PrivateKey.fromSeed(`${accountName}active${password}`),
       genPubKey = activeKey.toPublicKey().toString();
 
     if (genPubKey != acc.active.key_auths[0][0])
       throw new Error("The pair of login and password do not match!")
 
-    let account = new this(accountName, activeKey.toWif(), feeSymbol);
+    let account = new Karma(accountName, activeKey.toWif(), feeSymbol);
 
     account.setMemoKey((acc.options.memo_key === genPubKey ? activeKey : PrivateKey.fromSeed(`${accountName}memo${password}`)).toWif())
 
@@ -116,29 +108,28 @@ export default class Karma {
     })
   }
 
-  async setFeeAsset(feeSymbol) {
+  setFeeAsset = async feeSymbol => {
     await this.initPromise;
     this.feeAsset = await Karma.assets[feeSymbol]
   }
 
-  setMemoKey(memoKey) {
+  setMemoKey = memoKey => {
     this.memoKey = PrivateKey.fromWif(memoKey);
   }
 
-  broadcast(tx, keys = [this.activeKey]) {
-    return tx.broadcast(keys)
-  }
+  broadcast = (tx, keys = [this.activeKey]) =>
+    tx.broadcast(keys);
 
-  async balances() {
+  balances = async (...args) => {
     await this.initPromise;
 
-    let assets = await Promise.all(Object.keys(arguments)
-      .map(async index => (await Karma.assets[arguments[index]]).id));
+    let assets = await Promise.all(args
+      .map(async asset => (await Karma.assets[asset]).id));
     let balances = await Karma.db.get_account_balances(this.account.id, assets);
     return Promise.all(balances.map(balance => Karma.assets.fromParam(balance)))
   }
 
-  async memo(toName, message) {
+  memo = async (toName, message) => {
     if (!this.memoKey)
       throw new Error("Not set memoKey!");
 
@@ -153,15 +144,19 @@ export default class Karma {
     }
   }
 
-  memoDecode(memos) {
+  memoDecode = memos => {
     if (!this.memoKey)
       throw new Error("Not set memoKey!");
 
-    return Aes.decrypt_with_checksum(this.memoKey, memos.from, memos.nonce, memos.message)
-      .toString("utf-8");
+    return Aes.decrypt_with_checksum(
+      this.memoKey,
+      memos.from,
+      memos.nonce,
+      memos.message
+    ).toString("utf-8");
   }
 
-  async transferParams(toName, assetSymbol, amount, memo) {
+  transferOperation = async (toName, assetSymbol, amount, memo) => {
     await this.initPromise;
 
     let asset = await Karma.assets[assetSymbol],
@@ -181,14 +176,18 @@ export default class Karma {
     if (memo)
       params.memo = (typeof memo == "string") ? (await this.memo(toName, memo)) : memo;
 
-    return params
+    return { transfer: params }
   }
 
-  async transfer() {
-    let params = await this.transferParams(...arguments)
+  transfer = async (...args) => {
+    let operation = await this.transferOperation(...args)
 
     let tx = this.newTx()
-    tx.transfer(params)
+    tx.add(operation)
     return tx.broadcast()
   }
 }
+
+Event.init(Karma)
+
+export default Karma

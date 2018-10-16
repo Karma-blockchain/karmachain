@@ -33,8 +33,7 @@ function initializeContext(context) {
 function connect(autoreconnect = true) {
   let node = process.argv.includes("--testnet") ? "wss://testnet-node.karma.red" : undefined
 
-  karma.init(node, false, autoreconnect)
-  return karma.connect()
+  return karma.connect(node, autoreconnect)
 }
 
 function showError(error) {
@@ -91,16 +90,16 @@ if (process.argv.includes("--account")) {
     try {
       let account = await karma.accounts[account_name]
       let history = await karma.history.get_account_history(
-        account.id, 
-        /^1.11.\d+$/.test(start) ? start : "1.11.0", 
-        isNaN(limit) ? 100 : limit, 
+        account.id,
+        /^1.11.\d+$/.test(start) ? start : "1.11.0",
+        isNaN(limit) ? 100 : limit,
         /^1.11.\d+$/.test(stop) ? stop : "1.11.0"
       )
       console.log(JSON.stringify(history, null, 2))
     } catch(error) {
       console.log(`Error: ${error.message}`)
     }
-    
+
     karma.disconnect()
   }, showError)
 } else if (process.argv.includes("--transfer")) {
@@ -138,7 +137,7 @@ if (process.argv.includes("--account")) {
           } catch(error) {
             console.log(`Error: ${error.message}`)
           }
-          
+
           rl.close();
           karma.disconnect()
         })
@@ -156,4 +155,3 @@ if (process.argv.includes("--account")) {
 
   r.on('reset', initializeContext);
 }
-

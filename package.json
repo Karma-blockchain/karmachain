@@ -1,25 +1,27 @@
 {
   "name": "karmachain",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "description": "Package for work with Karma blockchain",
   "main": "index.js",
   "bin": {
     "karma": "./cli.js"
   },
   "scripts": {
-    "dev": "nodemon --exec 'npm' run build --ignore dist/ --watch src --delay 3",
-    "build": "npx babel src -d dist"
+    "dev": "nodemon --exec 'npm' run build --watch src",
+    "build": "babel src -d dist"
   },
   "author": "scientistnik <nozdrin.plotnitsky@gmail.com> (https://github.com/scientistnik)",
   "license": "MIT",
   "dependencies": {
+    "@babel/runtime": "^7.1.2",
     "karmajs": "^0.2.50"
   },
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-plugin-transform-class-properties": "^6.24.1",
-    "babel-plugin-transform-runtime": "^6.23.0",
-    "babel-preset-env": "^1.7.0",
+    "@babel/cli": "^7.1.2",
+    "@babel/core": "^7.1.2",
+    "@babel/plugin-proposal-class-properties": "^7.1.0",
+    "@babel/plugin-transform-runtime": "^7.1.0",
+    "@babel/preset-env": "^7.1.0",
     "nodemon": "^1.17.5"
   }
 }
