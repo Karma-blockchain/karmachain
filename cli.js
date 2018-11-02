@@ -31,7 +31,10 @@ function initializeContext(context) {
 }
 
 function connect(autoreconnect = true) {
-  let node = process.argv.includes("--testnet") ? "wss://testnet-node.karma.red" : undefined
+  let 
+    node = process.argv.includes("--node") 
+              ? process.argv[process.argv.indexOf("--node") + 1] 
+              : (process.argv.includes("--testnet") ? "wss://testnet-node.karma.red" : karma.node)
 
   return karma.connect(node, autoreconnect)
 }
@@ -102,6 +105,21 @@ if (process.argv.includes("--account")) {
 
     karma.disconnect()
   }, showError)
+} else if (process.argv.includes("--help")) {
+  if (process.argv.includes("--transfer"))
+    console.log(`How to use '--transfer' key:
+      $ karma --transfer <from> <to> <amount> <asset> [--key]`
+    )
+  else
+    console.log(`Available keys:
+      --version
+      --account     <'name' or 'id' or 'last number in id'>
+      --asset       <'symbol' or 'id' or 'last number in id'>
+      --block       [<number>]
+      --object      1.2.3
+      --history     <account> [<limit>] [<start>] [<stop>]
+      --transfer    <from> <to> <amount> <asset> [--key]
+    `)
 } else if (process.argv.includes("--transfer")) {
   let index = process.argv.indexOf("--transfer"),
       from = process.argv[index + 1],
@@ -149,6 +167,8 @@ if (process.argv.includes("--account")) {
     });
     mutableStdout.muted = true;
   }, showError)
+} else if (process.argv.includes("--version")) {
+  console.log(`karmachain version: v${require('./package.json').version}`)
 } else {
   const r = repl.start({ prompt: '> ' });
   initializeContext(r.context);

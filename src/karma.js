@@ -10,7 +10,8 @@ class Karma {
   static node = "wss://node.karma.red"
   static autoreconnect = true
 
-  static async connect(node, autoreconnect = Karma.autoreconnect) {
+  static async connect(node = Karma.node, autoreconnect = Karma.autoreconnect) {
+    Karma.autoreconnect = autoreconnect
     if (Karma.connectPromise || Karma.connectedPromise)
       return Promise.all([Karma.connectPromise, Karma.connectedPromise]);
 
@@ -120,6 +121,12 @@ class Karma {
   broadcast = (tx, keys = [this.activeKey]) =>
     tx.broadcast(keys);
 
+  sendOperation = operation => {
+    let tx = this.newTx()
+    tx.add(operation)
+    return tx.broadcast()
+  }
+
   balances = async (...args) => {
     await this.initPromise;
 
@@ -179,13 +186,49 @@ class Karma {
     return { transfer: params }
   }
 
-  transfer = async (...args) => {
-    let operation = await this.transferOperation(...args)
+  transfer = async (...args) =>
+    this.sendOperation(
+      await this.transferOperation(...args)
+    )
 
-    let tx = this.newTx()
-    tx.add(operation)
-    return tx.broadcast()
+  creaditRequestOperation = async (loadAssetName, depositAssetName, period, percent, memo) => {
+    await this.initPromise;
+
+    let params = {
+      fee: this.feeAsset.toParam(),
+      borrower: this.account.id,
+      loan_asset: (await Karma.assets[loadAssetName]).id,
+      loan_period: period,
+      loan_persent: percent,
+      loan_memo: memo,
+      deposit_asset: (await Karma.assets[depositAssetName]).id
+    }
+
+    return { credit_request_operation: params }
   }
+
+  creaditRequest = async (...args) =>
+    this.sendOperation(
+      await this.creaditRequestOperation(...args)
+    )
+
+  creditApproveOperation = async (uuid, memo) => {
+    await this.initPromise;
+
+    let params = {
+      fee: this.feeAsset.toParam(),
+      creditor: this.account.id,
+      credit_memo: memo,
+      credit_request_uuid: uuid
+    }
+
+    return { credit_approve_operation: params }
+  }
+
+  creditApprove = async (...args) =>
+    this.sendOperation(
+      await this.creditApproveOperation(...args)
+    )
 }
 
 Event.init(Karma)

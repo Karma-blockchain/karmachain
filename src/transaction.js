@@ -22,12 +22,16 @@ class Transaction {
   }
 
   add(operations) {
-    Object.keys(operations).forEach(op => this.tx.add_type_operation(op, operations[op]))
+    Object.keys(operations).forEach(
+      op => this.tx.add_type_operation(op, operations[op])
+    )
   }
 
   async broadcast(keys) {
     await this.tx.set_required_fees();
-    (keys ? keys : this.keys).forEach(key => this.tx.add_signer(key, key.toPublicKey().toPublicKeyString()))
+    (keys ? keys : this.keys).forEach(
+      key => this.tx.add_signer(key, key.toPublicKey().toPublicKeyString())
+    )
     return this.tx.broadcast();
   }
 }
