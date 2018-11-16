@@ -43,8 +43,23 @@ function showError(error) {
   console.log(`Error: ${error.message}`)
   karma.disconnect()
 }
-
-if (process.argv.includes("--account")) {
+if (process.argv.includes("--help")) {
+  if (process.argv.includes("--transfer"))
+    console.log(`How to use '--transfer' key:
+      $ karma --transfer <from> <to> <amount> <asset> [--key]`
+    )
+  else
+    console.log(`Available keys:
+      --version
+      --account     <'name' or 'id' or 'last number in id'>
+      --asset       <'symbol' or 'id' or 'last number in id'>
+      --block       [<number>]
+      --object      1.2.3
+      --history     <account> [<limit>] [<start>] [<stop>]
+      --balance     <account or accounts> [<asset or assets>]
+      --transfer    <from> <to> <amount> <asset> [--key]
+    `)
+} else if (process.argv.includes("--account")) {
   let index = process.argv.indexOf("--account")
 
   connect(false).then(() => {
@@ -105,21 +120,44 @@ if (process.argv.includes("--account")) {
 
     karma.disconnect()
   }, showError)
-} else if (process.argv.includes("--help")) {
-  if (process.argv.includes("--transfer"))
-    console.log(`How to use '--transfer' key:
-      $ karma --transfer <from> <to> <amount> <asset> [--key]`
-    )
-  else
-    console.log(`Available keys:
-      --version
-      --account     <'name' or 'id' or 'last number in id'>
-      --asset       <'symbol' or 'id' or 'last number in id'>
-      --block       [<number>]
-      --object      1.2.3
-      --history     <account> [<limit>] [<start>] [<stop>]
-      --transfer    <from> <to> <amount> <asset> [--key]
-    `)
+} else if (process.argv.includes("--balance")) {
+  let 
+    index = process.argv.indexOf("--balance"),
+    accounts = process.argv[index + 1],
+    assets = process.argv[index + 2];
+
+  connect(false).then(async () => {
+    try {
+      try {
+        assets = await Promise.all(assets.split(",").map(asset => karma.assets[asset]))
+      } catch(error) {
+        assets = []
+      }
+      
+      accounts = accounts.split(",")
+      result = await Promise.all(
+        accounts.map(async account_name => { 
+          let account = await karma.accounts[account_name];
+          let assetBalances = await karma.db.get_account_balances(account.id, assets.map(asset => asset.id))
+          let balances = {}
+
+          await Promise.all(assetBalances.map(async assetBalance => {
+            asset = await karma.assets.id(assetBalance.asset_id)
+            balances[asset.symbol] = assetBalance.amount / 10 ** asset.precision
+          }))
+          return balances
+        })
+      )
+      result.forEach((balance, index) => 
+        console.log(`\n${accounts[index]}${
+          Object.keys(balance).map(name => `\n${name}: ${balance[name]}`)
+        }`)
+      )
+    } catch(error) {
+      console.log(`Error: ${error.message}`)
+    }
+    karma.disconnect()
+  })
 } else if (process.argv.includes("--transfer")) {
   let index = process.argv.indexOf("--transfer"),
       from = process.argv[index + 1],
