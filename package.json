@@ -1,6 +1,6 @@
 {
   "name": "karmachain",
-  "version": "0.3.9",
+  "version": "0.4.0",
   "description": "Package for work with Karma blockchain",
   "main": "index.js",
   "bin": {
@@ -11,6 +11,7 @@
     "build": "babel src -d dist"
   },
   "author": "scientistnik <nozdrin.plotnitsky@gmail.com> (https://github.com/scientistnik)",
+  "repository": "github:Karma-blockchain/karmachain",
   "license": "MIT",
   "dependencies": {
     "@babel/runtime": "^7.1.2",
