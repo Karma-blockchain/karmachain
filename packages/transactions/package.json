@@ -1,0 +1,26 @@
+{
+  "name": "karmachain-transactions",
+  "version": "0.5.0",
+  "main": "./lib",
+  "license": "MIT",
+  "scripts": {
+    "dev": "nodemon --exec 'yarn' build --watch src",
+    "build": "babel src --out-dir lib",
+    "browserify": "browserify --full-paths lib/index.js --standalone KarmaTransactions -o dist/karma-transactions.js -d",
+    "postbrowserify": "uglifyjs --compress --mangle --sequences --drop_console --output dist/karma-transactions.min.js -- dist/karma-transactions.js"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.2.3",
+    "@babel/core": "^7.2.2",
+    "@babel/preset-env": "^7.3.1",
+    "browserify": "^16.2.3",
+    "nodemon": "^1.18.9",
+    "uglify-js-es6": "^2.8.9"
+  },
+  "dependencies": {
+    "bigi": "^1.4.2",
+    "bytebuffer": "^5.0.1",
+    "karmachain-api": "^0.5.1",
+    "karmachain-ecc": "^0.5.1"
+  }
+}

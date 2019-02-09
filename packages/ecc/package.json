@@ -1,0 +1,31 @@
+{
+  "name": "karmachain-ecc",
+  "version": "0.5.1",
+  "main": "./lib",
+  "license": "MIT",
+  "scripts": {
+    "dev": "nodemon --exec 'yarn' build --watch src",
+    "build": "babel src --out-dir lib",
+    "browserify": "browserify --full-paths lib/index.js --standalone KarmaEcc -o dist/karma-ecc.js -d",
+    "postbrowserify": "uglifyjs --compress --mangle --sequences --drop_console --output dist/karma-ecc.min.js -- dist/karma-ecc.js"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.2.3",
+    "@babel/core": "^7.2.2",
+    "@babel/preset-env": "^7.3.1",
+    "browserify": "^16.2.3",
+    "nodemon": "^1.18.9",
+    "uglify-js-es6": "^2.8.9"
+  },
+  "dependencies": {
+    "assert": "^1.4.1",
+    "bigi": "^1.4.2",
+    "bs58": "^4.0.1",
+    "create-hash": "^1.2.0",
+    "create-hmac": "^1.1.7",
+    "crypto-js": "^3.1.9-1",
+    "deep-equal": "^1.0.1",
+    "ecurve": "^1.0.6",
+    "secure-random": "^1.1.1"
+  }
+}

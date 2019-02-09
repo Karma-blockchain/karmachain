@@ -1,10 +1,12 @@
 import Event from "./event.js"
 import Asset from "./asset.js"
 import Account from "./account.js"
-import Api from "./api.js"
 import Fees from "./fees.js"
 import Transaction from "./transaction.js";
-import { PrivateKey, Login, Aes, ChainStore } from "karmajs"
+import { Ecc, Api } from "karmachain-transactions"
+import Login from "./Login"
+
+const { PrivateKey, Aes } = Ecc;
 
 class Karma {
   static node = "wss://node.karma.red"
@@ -16,12 +18,12 @@ class Karma {
       return Promise.all([Karma.connectPromise, Karma.connectedPromise]);
 
     if (Karma.autoreconnect)
-      Api.getApis().setRpcConnectionStatusCallback(Karma.statusCallBack)
+      Api.setStatusCallback(Karma.statusCallBack)
 
     await (Karma.connectPromise = Karma.reconnect(node));
     await (Karma.connectedPromise = Karma.connectedInit());
 
-    Karma.store = ChainStore;
+    //Karma.store = ChainStore;
 
     Event.connectedNotify()
 
@@ -30,7 +32,9 @@ class Karma {
 
   static async reconnect(node) {
     Karma.node = node
-    let res = await Api.getApis().instance(Karma.node, true).init_promise;
+    let res = await Api.connect(Karma.node, true);
+    Ecc.setAddressPrefix(Api.default.ChainConfig.address_prefix)
+
     Karma.chain = res[0].network;
 
     return res;
@@ -39,7 +43,7 @@ class Karma {
   static disconnect() {
     Karma.connectPromise = Karma.connectedPromise = undefined
     Karma.autoreconnect = false
-    return Api.getApis().close()
+    return Api.disconnect()
   }
 
   static statusCallBack(status) {
@@ -56,9 +60,9 @@ class Karma {
 
     this.blockReCall = true
 
-    this.db = Api.new('db_api');
-    this.history = Api.new('history_api');
-    this.network = Api.new('network_api');
+    this.db = Api.database;
+    this.history = Api.history;
+    this.network = Api.network;
     //this.crypto = Api.new('crypto_api');
     this.newTx = Transaction.newTx;
 

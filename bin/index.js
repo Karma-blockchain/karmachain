@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 
 const repl = require('repl'),
-      karma = require('./index.js'),
+      karma = require('../index.js'),
       readline = require('readline'),
-      Writable = require('stream').Writable;
+      Writable = require('stream').Writable,
+      operations = require('./operations.json');
 
 var mutableStdout = new Writable({
   write: function(chunk, encoding, callback) {
@@ -113,7 +114,21 @@ if (process.argv.includes("--help")) {
         isNaN(limit) ? 100 : limit,
         /^1.11.\d+$/.test(stop) ? stop : "1.11.0"
       )
-      console.log(JSON.stringify(history, null, 2))
+      //console.log(JSON.stringify(history, null, 2))
+      let i = 0
+      for(; i < history.length; i++) {
+        let op = history[i]
+        let txt = `id: ${op.id}, ${operations[op.op[0]]} = `
+        if (op.op[0] == 0) {
+          let asset = await karma.assets.id(op.op[1].amount.asset_id)
+          let from = await karma.accounts.id(op.op[1].from)
+          let to = await karma.accounts.id(op.op[1].to)
+
+          txt += `from: ${from.name}, to: ${to.name}, amount: ${op.op[1].amount.amount / 10 ** asset.precision} ${asset.symbol}`
+        } else
+          txt += JSON.stringify(op.op[1])
+        console.log(txt)
+      }
     } catch(error) {
       console.log(`Error: ${error.message}`)
     }

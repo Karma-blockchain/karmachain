@@ -1,21 +1,23 @@
 {
   "name": "karmachain",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Package for work with Karma blockchain",
   "main": "index.js",
   "bin": {
-    "karma": "./cli.js"
+    "karma": "./bin/index.js"
   },
   "scripts": {
     "dev": "nodemon --exec 'npm' run build --watch src",
-    "build": "babel src -d dist"
+    "build": "babel src -d dist",
+    "browserify": "browserify --full-paths lib/index.js --standalone KarmaApi -o dist/karma-api.js -d",
+    "postbrowserify": "uglifyjs --compress --mangle --sequences --drop_console --output dist/karma-api.min.js -- dist/karma-api.js"
   },
   "author": "scientistnik <nozdrin.plotnitsky@gmail.com> (https://github.com/scientistnik)",
   "repository": "github:Karma-blockchain/karmachain",
   "license": "MIT",
   "dependencies": {
     "@babel/runtime": "^7.1.2",
-    "karmajs": "^0.2.50"
+    "karmachain-transactions": "^0.5.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.1.2",

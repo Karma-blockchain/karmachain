@@ -1,4 +1,4 @@
-import { TransactionBuilder } from "karmajs";
+import { TransactionBuilder } from "karmachain-transactions";
 
 class Transaction {
   static newTx(keys) {
