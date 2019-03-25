@@ -1,6 +1,6 @@
 {
   "name": "karmachain",
-  "version": "0.5.0",
+  "version": "0.5.3",
   "description": "Package for work with Karma blockchain",
   "main": "index.js",
   "bin": {
@@ -21,10 +21,10 @@
   },
   "devDependencies": {
     "@babel/cli": "^7.1.2",
-    "@babel/core": "^7.1.2",
-    "@babel/plugin-proposal-class-properties": "^7.1.0",
+    "@babel/core": "^7.3.4",
+    "@babel/plugin-proposal-class-properties": "^7.3.4",
     "@babel/plugin-transform-runtime": "^7.1.0",
-    "@babel/preset-env": "^7.1.0",
+    "@babel/preset-env": "^7.3.4",
     "nodemon": "^1.17.5"
   }
 }
