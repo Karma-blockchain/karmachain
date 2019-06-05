@@ -52,7 +52,7 @@ if (process.argv.includes("--help")) {
     --asset       <'symbol' or 'id' or 'last number in id'>
     --block       [<number>]
     --object      1.2.3
-    --history     <account> [<limit>] [<start>] [<stop>]
+    --history     <account> [<limit>] [<start>] [<stop>] [--key <memoKey>]
     --balance     <account or accounts> [<asset or assets>]
     --transfer    <from> <to> <amount> <asset> [--key]
     --mint        <from> <to> <amount> <asset> [--key]
@@ -114,6 +114,13 @@ if (process.argv.includes("--help")) {
         isNaN(limit) ? 100 : limit,
         /^1.11.\d+$/.test(stop) ? stop : "1.11.0"
       );
+
+      let acc = null;
+      if (process.argv.includes("--key")) {
+        acc = new karma(account_name);
+        acc.setMemoKey(process.argv[process.argv.indexOf("--key") + 1]);
+      }
+
       //console.log(JSON.stringify(history, null, 2))
       let i = 0;
       for (; i < history.length; i++) {
@@ -126,7 +133,11 @@ if (process.argv.includes("--help")) {
 
           txt += `from: ${from.name}, to: ${to.name}, amount: ${op.op[1].amount
             .amount /
-            10 ** asset.precision} ${asset.symbol}`;
+            10 ** asset.precision} ${asset.symbol}, ${
+            acc && op.op[1].memo && to.name === account_name
+              ? `memo: ${acc.memoDecode(op.op[1].memo)}`
+              : ""
+          }`;
         } else txt += JSON.stringify(op.op[1]);
         console.log(txt);
       }

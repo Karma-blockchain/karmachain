@@ -1,6 +1,6 @@
 {
   "name": "karmachain",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "Package for work with Karma blockchain",
   "main": "index.js",
   "bin": {
